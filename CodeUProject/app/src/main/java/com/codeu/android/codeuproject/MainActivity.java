@@ -1,20 +1,9 @@
 package com.codeu.android.codeuproject;
 
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.ViewGroup;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -25,7 +14,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment()).commit();
+                    .add(R.id.container, new GameFragment(getApplicationContext())).commit();
         }
     }
 
@@ -49,40 +38,5 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public static class PlaceholderFragment extends Fragment {
-
-        ArrayAdapter<String> mGameAdapter;
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-            String[] data = {
-                "Game 1",
-                "Game 2",
-                "Game 3",
-                "Game 4",
-                "Game 5",
-                "Game 6"
-            };
-            List<String> gameList = new ArrayList<String>(Arrays.asList(data));
-
-            mGameAdapter = new ArrayAdapter<String>(
-                    getActivity(),
-                    R.layout.list_item_game,
-                    R.id.list_item_game_textview,
-                    gameList);
-
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-            ListView listView = (ListView) rootView.findViewById(R.id.listview_game);
-            listView.setAdapter(mGameAdapter);
-
-            return rootView;
-        }
     }
 }
