@@ -1,6 +1,7 @@
 package com.codeu.android.codeuproject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -101,6 +104,17 @@ public class GameFragment extends Fragment {
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_game);
         listView.setAdapter(mGameAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                String gameData = mGameAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), RecommendationActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, gameData);
+                startActivity(intent);
+            }
+        });
+
 
         // Get a reference to the Shuffle Button, and set up click listener.
         final Button button = (Button) rootView.findViewById(R.id.shuffle_button);
@@ -143,10 +157,6 @@ public class GameFragment extends Fragment {
                 id = game.getInt(GB_ID);
 
                 resultStrs[i] = id + " - " + name;
-            }
-
-            for (String s:resultStrs) {
-                Log.v(LOG_TAG, "Giant Bomb entry: " + s);
             }
 
             return resultStrs;
@@ -209,7 +219,6 @@ public class GameFragment extends Fragment {
                 }
                 gameDataJsonStr = buffer.toString();
 
-                Log.v(LOG_TAG, "Giant Bomb string: " + gameDataJsonStr);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 // Code didn't get the game data
