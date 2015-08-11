@@ -2,9 +2,11 @@ package com.codeu.android.codeuproject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,17 +37,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.codeu.android.codeuproject.FetchGameDataTask;
+
 /**
  * Created by geordywilliams on 8/3/15.
  * Fetching game data and displaying it as a layout.
  */
 public class GameFragment extends Fragment {
     ArrayAdapter<String> mGameAdapter;
-    Context context;
+    //Context context;
 
-    public GameFragment(Context c) {
-        context = c;
-    }
+    //public GameFragment(Context c) {
+    //    context = c;
+    //}
+    public GameFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,15 +71,17 @@ public class GameFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            CharSequence text = "Nothing happened and nothing was supposed to happen.";
-            int duration = Toast.LENGTH_LONG;
-
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
+            //CharSequence text = "Nothing happened and nothing was supposed to happen.";
+            //int duration = Toast.LENGTH_LONG;
+            //Toast toast = Toast.makeText(context, text, duration);
+            //toast.show();
 
             //FetchGameDataTask gameDataTask = new FetchGameDataTask();
             //gameDataTask.execute();
             //return true;
+            
+            updateGameData();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -115,144 +122,26 @@ public class GameFragment extends Fragment {
             }
         });
 
-
         // Get a reference to the Shuffle Button, and set up click listener.
         final Button button = (Button) rootView.findViewById(R.id.shuffle_button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FetchGameDataTask gameDataTask = new FetchGameDataTask();
-                gameDataTask.execute();
+                updateGameData();
             }
         });
 
         return rootView;
     }
-
-    public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
-
-        private final String LOG_TAG = FetchGameDataTask.class.getSimpleName();
-
-        /**
-         * Take the string representing the game data in JSON format and
-         * pull out the data we need to construct the strings needed for the wireframes.
-         */
-        private String[] getGameDataFromJson(String giantBombJsonStr) throws JSONException {
-            // The JSON objects to be extracted
-            final String GB_RESULTS = "results";
-            final String GB_ID = "id";
-            final String GB_NAME = "name";
-
-            JSONObject giantBombDataJson = new JSONObject(giantBombJsonStr);
-            JSONArray gameArray = giantBombDataJson.getJSONArray(GB_RESULTS);
-
-            Random r = new Random();
-            String[] resultStrs = new String[10];
-            for (int i = 0; i < 10; i++) {
-                String name;
-                int id;
-
-                JSONObject game = gameArray.getJSONObject(r.nextInt(100));
-
-                name = game.getString(GB_NAME);
-                id = game.getInt(GB_ID);
-
-                resultStrs[i] = id + " - " + name;
-            }
-
-            return resultStrs;
-        }
-
-        @Override
-        protected String[] doInBackground(String... params) {
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string
-            String gameDataJsonStr = null;
-
-            // profile key needed to access GiantBomb api
-            String key = "beda8b0843a1ac3465493df4018ddf26041ab6c4";
-            String format = "json";
-            // give us the name and id of each game you return
-            String field_list_name = "name";
-            String field_list_id = "id";
-            String limit = "100";
-
-            try {
-                final String GIANTBOMB_BASE_URL = "http://www.giantbomb.com/api/games/?";
-                final String KEY_PARAM = "api_key";
-                final String FORMAT_PARAM = "format";
-                final String FIELD_LIST_PARAM = "field_list";
-                final String LIMIT_PARAM = "limit";
-                final String OFFSET_PARAM = "offset";
-
-                Uri builtUri = Uri.parse(GIANTBOMB_BASE_URL).buildUpon()
-                        .appendQueryParameter(KEY_PARAM, key)
-                        .appendQueryParameter(FORMAT_PARAM, format)
-                        .appendQueryParameter(FIELD_LIST_PARAM, field_list_name + "," + field_list_id)
-                        .appendQueryParameter(LIMIT_PARAM, limit)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Creating the request to GiantBomb and opening the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Reading the input stream into a string
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    return null;
-                }
-                gameDataJsonStr = buffer.toString();
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // Code didn't get the game data
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            try {
-                return getGameDataFromJson(gameDataJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String[] result) {
-            if (result != null) {
-                mGameAdapter.clear();
-                for (String gameDataStr:result) {
-                    mGameAdapter.add(gameDataStr);
-                }
-            }
-        }
+    
+    private void updateGameData() {
+        FetchGameDataTask gameDataTask = new FetchGameDataTask(getActivity(), mGameAdapter);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        gameDataTask.execute();
+    }
+    
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateGameData();
     }
 }
