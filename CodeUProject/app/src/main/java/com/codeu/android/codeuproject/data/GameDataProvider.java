@@ -22,88 +22,20 @@ public class GameDataProvider extends ContentProvider {
     static final int GAME_WITH_NAME = 101;
     static final int RATING = 300;
 
-    //private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
     private static final SQLiteQueryBuilder sGameQueryBuilder;
-
-    /*
-    static{
-        sWeatherByLocationSettingQueryBuilder = new SQLiteQueryBuilder();
-
-        //This is an inner join which looks like
-        //weather INNER JOIN location ON weather.location_id = location._id
-        sWeatherByLocationSettingQueryBuilder.setTables(
-                WeatherContract.WeatherEntry.TABLE_NAME + " INNER JOIN " +
-                        WeatherContract.LocationEntry.TABLE_NAME +
-                        " ON " + WeatherContract.WeatherEntry.TABLE_NAME +
-                        "." + WeatherContract.WeatherEntry.COLUMN_LOC_KEY +
-                        " = " + WeatherContract.LocationEntry.TABLE_NAME +
-                        "." + WeatherContract.LocationEntry._ID);
-    }
-    */
 
     static{
         sGameQueryBuilder = new SQLiteQueryBuilder();
     }
 
-    /*
-    //location.location_setting = ?
-    private static final String sLocationSettingSelection =
-            WeatherContract.LocationEntry.TABLE_NAME+
-                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? ";
-
-    //location.location_setting = ? AND date >= ?
-    private static final String sLocationSettingWithStartDateSelection =
-            WeatherContract.LocationEntry.TABLE_NAME+
-                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? AND " +
-                    WeatherContract.WeatherEntry.COLUMN_DATE + " >= ? ";
-    */
-    /*
-    //location.location_setting = ? AND date = ?
-    private static final String sLocationSettingAndDaySelection =
-            WeatherContract.LocationEntry.TABLE_NAME +
-                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? AND " +
-                    WeatherContract.WeatherEntry.COLUMN_DATE + " = ? ";
-    */
     //name = ?
     private static final String sGameSelection =
             GameDataContract.GameEntry.COLUMN_GAME_NAME + " = ? ";
 
-
-    /*
-    private Cursor getWeatherByLocationSetting(Uri uri, String[] projection, String sortOrder) {
-        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        long startDate = WeatherContract.WeatherEntry.getStartDateFromUri(uri);
-
-        String[] selectionArgs;
-        String selection;
-
-        if (startDate == 0) {
-            selection = sLocationSettingSelection;
-            selectionArgs = new String[]{locationSetting};
-        } else {
-            selectionArgs = new String[]{locationSetting, Long.toString(startDate)};
-            selection = sLocationSettingWithStartDateSelection;
-        }
-
-        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder
-        );
-    }
-    */
-
-    //private Cursor getWeatherByLocationSettingAndDate(
     private Cursor getGameByName(
             Uri uri, String[] projection, String sortOrder) {
-        //String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
         String gameName = GameDataContract.GameEntry.getGameNameFromUri(uri);
-        //long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
 
-        //return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
                 //sLocationSettingAndDaySelection,
@@ -252,15 +184,6 @@ public class GameDataProvider extends ContentProvider {
         return rowsDeleted;
     }
 
-    /*
-    private void normalizeDate(ContentValues values) {
-        // normalize the date value
-        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE)) {
-            long dateValue = values.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
-            values.put(WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.normalizeDate(dateValue));
-        }
-    }
-*/
     @Override
     public int update(
             Uri uri, ContentValues values, String selection, String[] selectionArgs) {
