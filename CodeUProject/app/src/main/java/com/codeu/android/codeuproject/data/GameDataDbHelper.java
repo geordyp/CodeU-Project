@@ -21,15 +21,16 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        final String SQL_CREATE_RATING_TABLE = "CREATE TABLE " + RatingEntry.TABLE_NAME +
-                RatingEntry._ID + " INTEGER PRIMARY KEY," +
+        /*
+        final String SQL_CREATE_RATING_TABLE = "CREATE TABLE " + RatingEntry.TABLE_NAME + " (" +
+                RatingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 RatingEntry.COLUMN_REVIEWER + " TEXT NOT NULL, " +
                 RatingEntry.COLUMN_REVIEWER_ID + " INTEGER NOT NULL, " +
                 RatingEntry.COLUMN_GAME + " TEXT NOT NULL, " +
                 RatingEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
                 RatingEntry.COLUMN_SCORE + " INTEGER NOT NULL " +
                 " );";
-
+        */
         final String SQL_CREATE_GAME_TABLE = "CREATE TABLE " + GameEntry.TABLE_NAME + " (" +
                 GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GameEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
@@ -40,12 +41,12 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_GAME_TABLE);
-        sqLiteDatabase.execSQL(SQL_CREATE_RATING_TABLE);
+        //sqLiteDatabase.execSQL(SQL_CREATE_RATING_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RatingEntry.TABLE_NAME);
+        //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RatingEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + GameEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }

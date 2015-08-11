@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.media.Rating;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * Created by geordywilliams on 8/10/15.
@@ -16,6 +17,8 @@ public class GameDataProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private final String LOG_TAG = "tGameDataProvider";
+
     private GameDataDbHelper mOpenHelper;
 
     static final int GAME = 100;
@@ -38,9 +41,7 @@ public class GameDataProvider extends ContentProvider {
 
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
-                //sLocationSettingAndDaySelection,
                 sGameSelection,
-                //new String[]{locationSetting, Long.toString(date)},
                 new String[]{gameName},
                 null,
                 null,
@@ -134,6 +135,7 @@ public class GameDataProvider extends ContentProvider {
 
         switch (match) {
             case GAME: {
+                Log.d(LOG_TAG, values.toString());
                 long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
                     returnUri = GameDataContract.GameEntry.buildGameUri(_id);

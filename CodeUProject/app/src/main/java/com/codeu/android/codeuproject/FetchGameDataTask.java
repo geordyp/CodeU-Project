@@ -144,8 +144,8 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 gameValues.put(GameEntry.COLUMN_GAME_ID, id);
                 gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
                 gameValues.put(GameEntry.COLUMN_DECK, deck);
-                gameValues.put(GameEntry.COLUMN_SITE_URL, siteUrl);
                 gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
+                gameValues.put(GameEntry.COLUMN_SITE_URL, siteUrl);
 
                 cVVector.add(gameValues);
             }
