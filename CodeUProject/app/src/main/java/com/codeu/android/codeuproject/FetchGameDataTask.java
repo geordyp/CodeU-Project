@@ -17,7 +17,7 @@ import android.text.format.Time;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
-import com.codeu.android.codeuproject.data.GameDataContract;
+import com.codeu.android.codeuproject.data.GameDataContract.RatingEntry;
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 import org.json.JSONArray;
@@ -53,14 +53,14 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         int game_id = hash(game);
 
         ContentValues ratingValues = new ContentValues();
-        ratingValues.put(GameDataContract.RatingEntry.COLUMN_REVIEWER, reviewer);
-        ratingValues.put(GameDataContract.RatingEntry.COLUMN_REVIEWER_ID, reviewer_id);
-        ratingValues.put(GameDataContract.RatingEntry.COLUMN_GAME, game);
-        ratingValues.put(GameDataContract.RatingEntry.COLUMN_GAME_ID, game_id);
-        ratingValues.put(GameDataContract.RatingEntry.COLUMN_SCORE, score);
+        ratingValues.put(RatingEntry.COLUMN_REVIEWER, reviewer);
+        ratingValues.put(RatingEntry.COLUMN_REVIEWER_ID, reviewer_id);
+        ratingValues.put(RatingEntry.COLUMN_GAME, game);
+        ratingValues.put(RatingEntry.COLUMN_GAME_ID, game_id);
+        ratingValues.put(RatingEntry.COLUMN_SCORE, score);
 
         Uri insertedUri = mContext.getContentResolver().insert(
-                GameEntry.CONTENT_URI,
+                RatingEntry.CONTENT_URI,
                 ratingValues);
 
         ratingId = ContentUris.parseId(insertedUri);
@@ -76,7 +76,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
         gameValues.put(GameEntry.COLUMN_DECK, deck);
         gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
-        gameValues.put(GameEntry.COLUMN_SITE_URL, siteUrl);
 
         Uri insertedUri = mContext.getContentResolver().insert(
                 GameEntry.CONTENT_URI,
@@ -115,12 +114,13 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         final String GB_ID = "id";
         final String GB_NAME = "name";
         final String GB_DECK = "deck";
-        final String GB_SITE_URL = "site_detail_url";
         final String GB_RELEASE_DATE = "original_release_date";
 
         try {
             JSONObject giantBombDataJson = new JSONObject(giantBombJsonStr);
             JSONArray gameArray = giantBombDataJson.getJSONArray(GB_RESULTS);
+
+            //flong gameId = addGame(gameApiId, name, deck, releaseDate, siteUrl);
 
             Vector<ContentValues> cVVector = new Vector<ContentValues>(gameArray.length());
 
@@ -128,7 +128,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 int id;
                 String name;
                 String deck;
-                String siteUrl;
                 String releaseDate;
 
                 JSONObject game = gameArray.getJSONObject(i);
@@ -136,7 +135,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 id = game.getInt(GB_ID);
                 name = game.getString(GB_NAME);
                 deck = game.getString(GB_DECK);
-                siteUrl = game.getString(GB_SITE_URL);
                 releaseDate = game.getString(GB_RELEASE_DATE);
 
                 ContentValues gameValues = new ContentValues();
@@ -145,7 +143,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
                 gameValues.put(GameEntry.COLUMN_DECK, deck);
                 gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
-                gameValues.put(GameEntry.COLUMN_SITE_URL, siteUrl);
 
                 cVVector.add(gameValues);
             }
@@ -155,12 +152,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 cVVector.toArray(cvArray);
                 mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
             }
-
-            /*
-            String sortOrder = WeatherEntry.COLUMN_DATE + " ASC";
-+            Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithStartDate(
-+                    locationSetting, System.currentTimeMillis());
-             */
+/*
             String sortOrder = GameEntry.COLUMN_GAME_NAME + " ASC";
             Uri gameDataUri = GameEntry.buildGameUri(System.currentTimeMillis());
 
@@ -176,7 +168,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     cVVector.add(cv);
                 } while (cur.moveToNext());
             }
-
+*/
             Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 
             String[] resultStrs = convertContentValuesToUXFormat(cVVector);
@@ -204,7 +196,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         String field_list_name = "name";
         String field_list_id = "id";
         String field_list_deck = "deck";
-        String field_list_url = "site_detail_url";
         String field_list_release_date = "original_release_date";
         String limit = "100";
 
@@ -222,12 +213,13 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     .appendQueryParameter(FIELD_LIST_PARAM, field_list_name + "," +
                             field_list_id + "," +
                             field_list_deck + "," +
-                            field_list_url + "," +
                             field_list_release_date)
                     .appendQueryParameter(LIMIT_PARAM, limit)
                     .build();
 
             URL url = new URL(builtUri.toString());
+
+            Log.d(LOG_TAG, url.toString());
 
             // Creating the request to GiantBomb and opening the connection
             urlConnection = (HttpURLConnection) url.openConnection();

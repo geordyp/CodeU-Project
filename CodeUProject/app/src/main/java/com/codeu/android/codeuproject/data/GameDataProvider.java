@@ -6,7 +6,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.media.Rating;
 import android.net.Uri;
 import android.util.Log;
 
@@ -222,6 +221,7 @@ public class GameDataProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
+                        Log.d(LOG_TAG, value.toString());
                         long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;

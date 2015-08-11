@@ -11,7 +11,7 @@ import com.codeu.android.codeuproject.data.GameDataContract.RatingEntry;
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 public class GameDataDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "gameData.db";
 
@@ -21,7 +21,7 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        /*
+
         final String SQL_CREATE_RATING_TABLE = "CREATE TABLE " + RatingEntry.TABLE_NAME + " (" +
                 RatingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 RatingEntry.COLUMN_REVIEWER + " TEXT NOT NULL, " +
@@ -30,23 +30,22 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
                 RatingEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
                 RatingEntry.COLUMN_SCORE + " INTEGER NOT NULL " +
                 " );";
-        */
+
         final String SQL_CREATE_GAME_TABLE = "CREATE TABLE " + GameEntry.TABLE_NAME + " (" +
                 GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GameEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
                 GameEntry.COLUMN_GAME_NAME + " TEXT NOT NULL, " +
                 GameEntry.COLUMN_DECK + " TEXT NOT NULL, " +
-                GameEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
-                GameEntry.COLUMN_SITE_URL + " TEXT NOT NULL " +
+                GameEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL " +
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_GAME_TABLE);
-        //sqLiteDatabase.execSQL(SQL_CREATE_RATING_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_RATING_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RatingEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RatingEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + GameEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }

@@ -52,10 +52,9 @@ public class GameDataContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GAME;
 
         public static final String TABLE_NAME = "games";
+        public static final String COLUMN_GAME_ID = "id";
         public static final String COLUMN_GAME_NAME = "name";
-        public static final String COLUMN_GAME_ID = "game_id";
         public static final String COLUMN_DECK = "deck";
-        public static final String COLUMN_SITE_URL = "site_detail_url";
         public static final String COLUMN_RELEASE_DATE = "original_release_date";
 
         public static Uri buildGameUri(long id) {
