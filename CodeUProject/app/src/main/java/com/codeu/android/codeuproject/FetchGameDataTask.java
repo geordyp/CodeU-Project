@@ -197,14 +197,13 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         String field_list_id = "id";
         String field_list_deck = "deck";
         String field_list_release_date = "original_release_date";
-        String limit = "100";
+        String offset = "0";
 
         try {
             final String GIANTBOMB_BASE_URL = "http://www.giantbomb.com/api/games/?";
             final String KEY_PARAM = "api_key";
             final String FORMAT_PARAM = "format";
             final String FIELD_LIST_PARAM = "field_list";
-            final String LIMIT_PARAM = "limit";
             final String OFFSET_PARAM = "offset";
 
             Uri builtUri = Uri.parse(GIANTBOMB_BASE_URL).buildUpon()
@@ -214,7 +213,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                             field_list_id + "," +
                             field_list_deck + "," +
                             field_list_release_date)
-                    .appendQueryParameter(LIMIT_PARAM, limit)
+                    .appendQueryParameter(offset, OFFSET_PARAM)
                     .build();
 
             URL url = new URL(builtUri.toString());

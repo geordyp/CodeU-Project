@@ -89,22 +89,11 @@ public class GameFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        // Dummy data
-        String[] data = {
-                "Game 1",
-                "Game 2",
-                "Game 3",
-                "Game 4",
-                "Game 5",
-                "Game 6"
-        };
-        List<String> gameList = new ArrayList<String>(Arrays.asList(data));
-
         mGameAdapter = new ArrayAdapter<String>(
                 getActivity(),
                 R.layout.list_item_game,
                 R.id.list_item_game_textview,
-                gameList);
+                new ArrayList<String>());
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
