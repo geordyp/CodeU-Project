@@ -1,43 +1,26 @@
 package com.codeu.android.codeuproject;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.codeu.android.codeuproject.data.GameDataContract;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
-import com.codeu.android.codeuproject.FetchGameDataTask;
 
 /**
  * Created by geordywilliams on 8/3/15.
@@ -45,11 +28,25 @@ import com.codeu.android.codeuproject.FetchGameDataTask;
  */
 public class GameFragment extends Fragment {
     ArrayAdapter<String> mGameAdapter;
+    private int mPosition = ListView.INVALID_POSITION;
     //Context context;
 
     //public GameFragment(Context c) {
     //    context = c;
     //}
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri dateUri);
+    }
+
     public GameFragment() {}
 
     @Override
@@ -104,10 +101,23 @@ public class GameFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                String gameData = mGameAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), RecommendationActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, gameData);
-                startActivity(intent);
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    String locationSetting = Utility.getPreferredLocation(getActivity());
+                    ((Callback) getActivity())
+                            .onItemSelected(GameDataContract.GameEntry.buildWeatherLocationWithDate(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
+                            ));
+                }
+                mPosition = position;
+
+                // OLD WAY, AKA NOT USING A CURSOR
+                //String gameData = mGameAdapter.getItem(position);
+                //Intent intent = new Intent(getActivity(), DetailActivity.class) // HERE!
+                //        .putExtra(Intent.EXTRA_TEXT, gameData);
+                //startActivity(intent);
             }
         });
 
