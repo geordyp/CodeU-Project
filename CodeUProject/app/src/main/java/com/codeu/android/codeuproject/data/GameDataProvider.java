@@ -22,7 +22,6 @@ public class GameDataProvider extends ContentProvider {
 
     static final int GAME = 100;
     static final int GAME_WITH_NAME = 101;
-    static final int RATING = 300;
 
     private static final SQLiteQueryBuilder sGameQueryBuilder;
 
@@ -55,7 +54,6 @@ public class GameDataProvider extends ContentProvider {
         matcher.addURI(authority, GameDataContract.PATH_GAME, GAME);
         matcher.addURI(authority, GameDataContract.PATH_GAME + "/*", GAME_WITH_NAME);
 
-        matcher.addURI(authority, GameDataContract.PATH_RATING, RATING);
         return matcher;
     }
 
@@ -75,8 +73,6 @@ public class GameDataProvider extends ContentProvider {
                 return GameDataContract.GameEntry.CONTENT_ITEM_TYPE;
             case GAME:
                 return GameDataContract.GameEntry.CONTENT_TYPE;
-            case RATING:
-                return GameDataContract.RatingEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -98,18 +94,6 @@ public class GameDataProvider extends ContentProvider {
             case GAME: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         GameDataContract.GameEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
-                break;
-            }
-            // "rating"
-            case RATING: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        GameDataContract.RatingEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -142,14 +126,6 @@ public class GameDataProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
-            case RATING: {
-                long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
-                    returnUri = GameDataContract.RatingEntry.buildRatingUri(_id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
-                break;
-            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -171,10 +147,6 @@ public class GameDataProvider extends ContentProvider {
             case GAME:
                 rowsDeleted = db.delete(
                         GameDataContract.GameEntry.TABLE_NAME, selection, selectionArgs);
-                break;
-            case RATING:
-                rowsDeleted = db.delete(
-                        GameDataContract.RatingEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -198,10 +170,6 @@ public class GameDataProvider extends ContentProvider {
                 rowsUpdated = db.update(GameDataContract.GameEntry.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
-            case RATING:
-                rowsUpdated = db.update(GameDataContract.RatingEntry.TABLE_NAME, values, selection,
-                        selectionArgs);
-                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -222,22 +190,6 @@ public class GameDataProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         Log.d(LOG_TAG, value.toString());
-                        long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
-                        }
-                    }
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
-                getContext().getContentResolver().notifyChange(uri, null);
-                return returnCount;
-            case RATING:
-                db.beginTransaction();
-                returnCount = 0;
-                try {
-                    for (ContentValues value : values) {
                         long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;

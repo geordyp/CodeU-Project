@@ -7,11 +7,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.codeu.android.codeuproject.data.GameDataContract.RatingEntry;
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 public class GameDataDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "gameData.db";
 
@@ -22,30 +21,25 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
-        final String SQL_CREATE_RATING_TABLE = "CREATE TABLE " + RatingEntry.TABLE_NAME + " (" +
-                RatingEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                RatingEntry.COLUMN_REVIEWER + " TEXT NOT NULL, " +
-                RatingEntry.COLUMN_REVIEWER_ID + " INTEGER NOT NULL, " +
-                RatingEntry.COLUMN_GAME + " TEXT NOT NULL, " +
-                RatingEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
-                RatingEntry.COLUMN_SCORE + " INTEGER NOT NULL " +
-                " );";
-
         final String SQL_CREATE_GAME_TABLE = "CREATE TABLE " + GameEntry.TABLE_NAME + " (" +
                 GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GameEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
                 GameEntry.COLUMN_GAME_NAME + " TEXT NOT NULL, " +
-                GameEntry.COLUMN_DECK + " TEXT NOT NULL, " +
-                GameEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL " +
+                GameEntry.COLUMN_DECK + " TEXT, " +
+                GameEntry.COLUMN_RELEASE_DATE + " TEXT, " +
+                GameEntry.COLUMN_PLATFORMS + " TEXT, " +
+                GameEntry.COLUMN_IMAGE + " TEXT, " +
+                GameEntry.COLUMN_GENRES + " TEXT, " +
+                GameEntry.COLUMN_DEVELOPERS + " TEXT, " +
+                GameEntry.COLUMN_PUBLISHERS + " TEXT, " +
+                GameEntry.COLUMN_SIMILAR_GAMES + " TEXT " +
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_GAME_TABLE);
-        sqLiteDatabase.execSQL(SQL_CREATE_RATING_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RatingEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + GameEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
