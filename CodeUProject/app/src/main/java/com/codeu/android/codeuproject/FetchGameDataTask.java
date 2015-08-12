@@ -56,8 +56,11 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     " - " + gameValues.getAsString(GameEntry.COLUMN_GAME_NAME);
              */
 
-            resultStrs[i] = gameValues.getAsString(GameEntry.COLUMN_GAME_NAME);// + "-" +
-                            //gameValues.getAsString(GameEntry.COLUMN_ICON_URL);
+            resultStrs[i] = gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + "-" +
+                    gameValues.getAsString(GameEntry.COLUMN_GAME_ID) + "-" +
+                    gameValues.getAsString(GameEntry.COLUMN_DECK) + "-" +
+                    gameValues.getAsString(GameEntry.COLUMN_RELEASE_DATE) + "-" +
+                    gameValues.getAsString(GameEntry.COLUMN_PLATFORMS);
         }
         return resultStrs;
     }
@@ -79,9 +82,18 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         final String GB_RESULTS = "results";
         final String GB_ID = "id";
         final String GB_NAME = "name";
-        //final String GB_IMAGE = "image";
-        //final String GB_DECK = "deck";
-        //final String GB_RELEASE_DATE = "original_release_date";
+        final String GB_DECK = "deck";
+        final String GB_RELEASE_DATE = "original_release_date";
+        final String GB_IMAGE = "image";
+        final String GB_PLATFORMS = "platforms";
+        final String GB_ICON_URL = "icon_url";
+
+        /*
+        public static final String COLUMN_GENRES = "genres";
+        public static final String COLUMN_DEVELOPERS = "developers";
+        public static final String COLUMN_PUBLISHERS = "publishers";
+        public static final String COLUMN_SIMILAR_GAMES = "similar_games";
+        */
 
         Log.d(LOG_TAG, giantBombJsonStr);
 
@@ -94,28 +106,31 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
             for (int i = 0; i < gameArray.length(); i++) {
                 int id;
                 String name;
-                //String image;
-                //String deck;
-                //String releaseDate;
+                String image;
+                String deck;
+                String releaseDate;
+                StringBuilder platformList = new StringBuilder();
 
                 JSONObject game = gameArray.getJSONObject(i);
-
-                //JSONObject images = game.getJSONObject(GB_IMAGE);
+                JSONObject images = game.getJSONObject(GB_IMAGE);
+                JSONArray platforms = game.getJSONArray(GB_PLATFORMS);
 
                 id = game.getInt(GB_ID);
                 name = game.getString(GB_NAME);
-                //image = images.getString("icon_url");
-                //image = "http:\\/\\/static.giantbomb.com\\/uploads\\/square_avatar\\/9\\/93770\\/2370498-genesis_desertstrike_2__1_.jpg";
-                //deck = game.getString(GB_DECK);
-                //releaseDate = game.getString(GB_RELEASE_DATE);
+                image = images.getString(GB_ICON_URL);
+                deck = game.getString(GB_DECK);
+                releaseDate = game.getString(GB_RELEASE_DATE);
+                for (int m = 0; m < platforms.length(); m++) {
+                    platformList.append(platforms.getJSONObject(m).getString("name") + ",");
+                }
 
                 ContentValues gameValues = new ContentValues();
-
                 gameValues.put(GameEntry.COLUMN_GAME_ID, id);
                 gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
-                //gameValues.put(GameEntry.COLUMN_ICON_URL, image);
-                //gameValues.put(GameEntry.COLUMN_DECK, deck);
-                //gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
+                gameValues.put(GameEntry.COLUMN_DECK, deck);
+                gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
+                gameValues.put(GameEntry.COLUMN_PLATFORMS, platformList.toString());
+                gameValues.put(GameEntry.COLUMN_IMAGE, image);
 
                 cVVector.add(gameValues);
             }
