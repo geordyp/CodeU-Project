@@ -103,7 +103,7 @@ public class GameFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 // CursorAdapter returns a cursor at the correct position for getItem(), or null
                 // if it cannot seek to that position.
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                /**Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
                     ((Callback) getActivity())
@@ -111,13 +111,13 @@ public class GameFragment extends Fragment {
                                     locationSetting, cursor.getLong(COL_WEATHER_DATE)
                             ));
                 }
-                mPosition = position;
+                mPosition = position; */
 
                 // OLD WAY, AKA NOT USING A CURSOR
-                //String gameData = mGameAdapter.getItem(position);
-                //Intent intent = new Intent(getActivity(), DetailActivity.class) // HERE!
-                //        .putExtra(Intent.EXTRA_TEXT, gameData);
-                //startActivity(intent);
+                String gameData = mGameAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), DetailActivity.class) // HERE!
+                        .putExtra(Intent.EXTRA_TEXT, gameData);
+                startActivity(intent);
             }
         });
 
