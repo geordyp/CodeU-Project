@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 public class GameDataDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     static final String DATABASE_NAME = "gameData.db";
 
@@ -25,9 +25,9 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
                 GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GameEntry.COLUMN_GAME_ID + " INTEGER NOT NULL, " +
                 GameEntry.COLUMN_GAME_NAME + " TEXT NOT NULL, " +
-                GameEntry.COLUMN_DECK + " TEXT, " +
-                GameEntry.COLUMN_RELEASE_DATE + " TEXT, " +
-                GameEntry.COLUMN_PLATFORMS + " TEXT, " +
+                GameEntry.COLUMN_DECK + " TEXT NOT NULL, " +
+                GameEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                GameEntry.COLUMN_PLATFORMS + " TEXT NOT NULL, " +
                 GameEntry.COLUMN_IMAGE + " TEXT, " +
                 GameEntry.COLUMN_GENRES + " TEXT, " +
                 GameEntry.COLUMN_DEVELOPERS + " TEXT, " +

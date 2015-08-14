@@ -4,16 +4,10 @@ package com.codeu.android.codeuproject;
  * Created by geordywilliams on 8/10/15.
  */
 
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-import android.text.format.Time;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -30,12 +24,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Vector;
 
 public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
 
-    private final String LOG_TAG = "hey,listen";//FetchGameDataTask.class.getSimpleName();
+    private final String LOG_TAG = "hey,listen up";
 
     private ArrayAdapter<String> mGiantBombAdapter;
     private final Context mContext;
@@ -45,40 +41,22 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         mGiantBombAdapter = giantBombAdapter;
     }
 
-    private boolean DEBUG = true;
-
-    String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
-        String[] resultStrs = new String[cvv.size()];
+    void convertContentValuesToUXFormat(Vector<ContentValues> cvv, List<String> resultStrs) {
         for (int i = 0; i < cvv.size(); i++) {
             ContentValues gameValues = cvv.elementAt(i);
-            /*
-            resultStrs[i] = gameValues.getAsString(GameEntry.COLUMN_GAME_ID) +
-                    " - " + gameValues.getAsString(GameEntry.COLUMN_GAME_NAME);
-             */
 
-            resultStrs[i] = gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + "-" +
-                    gameValues.getAsString(GameEntry.COLUMN_GAME_ID) + "-" +
-                    gameValues.getAsString(GameEntry.COLUMN_DECK) + "-" +
-                    gameValues.getAsString(GameEntry.COLUMN_RELEASE_DATE) + "-" +
-                    gameValues.getAsString(GameEntry.COLUMN_PLATFORMS);
+            resultStrs.add(gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + "\n" +
+                    gameValues.getAsString(GameEntry.COLUMN_DECK) + " - " +
+                    gameValues.getAsString(GameEntry.COLUMN_PLATFORMS));
         }
-        return resultStrs;
-    }
-
-    public static int hash(String s) {
-        int h = 0;
-        for (int i = 0; i < s.length(); i++) {
-            h = 31 * h + s.charAt(i);
-        }
-        return h;
     }
 
     /**
      * Take the string representing the game data in JSON format and
      * pull out the data we need to construct the strings needed for the wireframes.
      */
-    private String[] getGameDataFromJson(String giantBombJsonStr) throws JSONException {
-        // The JSON objects to be extracted
+    private String[] getGameDataFromJson(List<JSONObject> giantBombJsonList) throws JSONException {
+        // The JSON objects to be extracted from list
         final String GB_RESULTS = "results";
         final String GB_ID = "id";
         final String GB_NAME = "name";
@@ -88,79 +66,195 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         final String GB_PLATFORMS = "platforms";
         final String GB_ICON_URL = "icon_url";
 
-        /*
-        public static final String COLUMN_GENRES = "genres";
-        public static final String COLUMN_DEVELOPERS = "developers";
-        public static final String COLUMN_PUBLISHERS = "publishers";
-        public static final String COLUMN_SIMILAR_GAMES = "similar_games";
-        */
+        // The JSON objects to be extracted from item
+        final String GB_GENRES = "genres";
+        final String GB_DEVELOPERS = "developers";
+        final String GB_PUBLISHERS = "publishers";
+        final String GB_SIMILAR_GAMES = "similar_games";
 
-        Log.d(LOG_TAG, giantBombJsonStr);
+        // the resulting values from the JSONs
+        List<String> resultStrs = new ArrayList<>();
 
         try {
-            JSONObject giantBombDataJson = new JSONObject(giantBombJsonStr);
-            JSONArray gameArray = giantBombDataJson.getJSONArray(GB_RESULTS);
 
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(gameArray.length());
+            // for each of the JSONs in list of GiantBomb JSONs
+            for (JSONObject giantBombJson : giantBombJsonList) {
 
-            for (int i = 0; i < gameArray.length(); i++) {
-                int id;
-                String name;
-                String image;
-                String deck;
-                String releaseDate;
-                StringBuilder platformList = new StringBuilder();
+                JSONArray gameArray = giantBombJson.getJSONArray(GB_RESULTS);
+                Vector<ContentValues> cVVector = new Vector<>(gameArray.length());
 
-                JSONObject game = gameArray.getJSONObject(i);
-                JSONObject images = game.getJSONObject(GB_IMAGE);
-                JSONArray platforms = game.getJSONArray(GB_PLATFORMS);
+                int game_id;
+                String game_name;
+                String game_image;
+                String game_deck;
+                String game_releaseDate;
+                StringBuilder game_platformList;
+                for (int i = 0; i < gameArray.length(); i++) {
 
-                id = game.getInt(GB_ID);
-                name = game.getString(GB_NAME);
-                image = images.getString(GB_ICON_URL);
-                deck = game.getString(GB_DECK);
-                releaseDate = game.getString(GB_RELEASE_DATE);
-                for (int m = 0; m < platforms.length(); m++) {
-                    platformList.append(platforms.getJSONObject(m).getString("name") + ",");
+                    JSONObject game = gameArray.getJSONObject(i);
+
+                    game_id = game.getInt(GB_ID);
+                    game_name = game.getString(GB_NAME);
+                    game_deck = game.getString(GB_DECK);
+                    game_releaseDate = game.getString(GB_RELEASE_DATE);
+
+                    JSONArray platforms = game.getJSONArray(GB_PLATFORMS);
+                    game_platformList = new StringBuilder();
+                    for (int m = 0; m < platforms.length(); m++) {
+                        game_platformList.append(platforms.getJSONObject(m).getString("name") + ",");
+                    }
+
+                    // may be null
+                    JSONObject images;
+                    try {
+                        images = game.getJSONObject(GB_IMAGE);
+                        game_image = images.getString(GB_ICON_URL);
+                    } catch(JSONException e) {
+                        game_image = null;
+                    }
+
+                    /*
+                        from here we make item queries to get
+                        further information on a single game
+                     */
+
+                    // profile key needed to access GiantBomb api
+                    String key = "beda8b0843a1ac3465493df4018ddf26041ab6c4";
+                    String format = "json";
+                    // field_list narrows down the details returned
+                    String field_list_genres = "genres";
+                    String field_list_developers = "developers";
+                    String field_list_publishers = "publishers";
+                    String field_list_similar_games = "similar_games";
+
+                    final String GIANTBOMB_GAME_BASE_URL = "http://www.giantbomb.com/api/game/" + game_id + "/?";
+                    final String KEY_PARAM = "api_key";
+                    final String FORMAT_PARAM = "format";
+                    final String FIELD_LIST_PARAM = "field_list";
+
+                    Uri builtUri = Uri.parse(GIANTBOMB_GAME_BASE_URL).buildUpon()
+                            .appendQueryParameter(KEY_PARAM, key)
+                            .appendQueryParameter(FORMAT_PARAM, format)
+                            .appendQueryParameter(FIELD_LIST_PARAM, field_list_genres + "," +
+                                    field_list_developers + "," +
+                                    field_list_publishers + "," +
+                                    field_list_similar_games)
+                            .build();
+
+                    URL url = new URL(builtUri.toString());
+
+                    HttpURLConnection urlConnection = null;
+                    BufferedReader reader = null;
+
+                    // Creating the request to GiantBomb and opening the connection
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
+
+                    // Reading the input stream into a string
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) return null;
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    String line;
+                    while ((line = reader.readLine()) != null) buffer.append(line + "\n");
+
+                    String game_genresList = null;
+                    String game_developersList = null;
+                    String game_publishersList = null;
+                    String game_similarGamesList = null;
+                    if (buffer.length() > 0) {
+                        String gameDataJsonStr = buffer.toString();
+
+                        JSONObject giantBombDataJson = new JSONObject(gameDataJsonStr);
+                        JSONObject gameInfo = giantBombDataJson.getJSONObject(GB_RESULTS);
+
+                        StringBuilder genres = new StringBuilder();
+                        StringBuilder developers = new StringBuilder();
+                        StringBuilder publishers = new StringBuilder();
+                        StringBuilder similar_games = new StringBuilder();
+
+                        // all of these may be null
+                        JSONArray genresArray;
+                        try {
+                            genresArray = gameInfo.getJSONArray(GB_GENRES);
+                            game_genresList = getJsonArrayItems(genresArray, genres);
+                        } catch(JSONException e) {
+                            game_genresList = null;
+                        }
+                        JSONArray developersArray;
+                        try {
+                            developersArray = gameInfo.getJSONArray(GB_DEVELOPERS);
+                            game_developersList = getJsonArrayItems(developersArray, developers);
+                        } catch(JSONException e) {
+                            game_developersList = null;
+                        }
+                        JSONArray publisherArray;
+                        try {
+                            publisherArray = gameInfo.getJSONArray(GB_PUBLISHERS);
+                            game_publishersList = getJsonArrayItems(publisherArray, publishers);
+                        } catch(JSONException e) {
+                            game_publishersList = null;
+                        }
+                        JSONArray similarGamesArray;
+                        try {
+                            similarGamesArray = gameInfo.getJSONArray(GB_SIMILAR_GAMES);
+                            game_similarGamesList = getJsonArrayItems(similarGamesArray, similar_games);
+                        } catch(JSONException e) {
+                            game_similarGamesList = null;
+                        }
+                    }
+
+                    ContentValues gameValues = new ContentValues();
+                    gameValues.put(GameEntry.COLUMN_GAME_ID, game_id);
+                    gameValues.put(GameEntry.COLUMN_GAME_NAME, game_name);
+                    gameValues.put(GameEntry.COLUMN_DECK, game_deck);
+                    gameValues.put(GameEntry.COLUMN_RELEASE_DATE, game_releaseDate);
+                    gameValues.put(GameEntry.COLUMN_PLATFORMS, game_platformList.toString());
+                    gameValues.put(GameEntry.COLUMN_IMAGE, game_image);
+                    gameValues.put(GameEntry.COLUMN_PUBLISHERS, game_publishersList);
+                    gameValues.put(GameEntry.COLUMN_GENRES, game_genresList);
+                    gameValues.put(GameEntry.COLUMN_DEVELOPERS, game_developersList);
+                    gameValues.put(GameEntry.COLUMN_SIMILAR_GAMES, game_similarGamesList);
+
+                    cVVector.add(gameValues);
                 }
 
-                ContentValues gameValues = new ContentValues();
-                gameValues.put(GameEntry.COLUMN_GAME_ID, id);
-                gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
-                gameValues.put(GameEntry.COLUMN_DECK, deck);
-                gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
-                gameValues.put(GameEntry.COLUMN_PLATFORMS, platformList.toString());
-                gameValues.put(GameEntry.COLUMN_IMAGE, image);
+                if (cVVector.size() > 0) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
+                }
 
-                cVVector.add(gameValues);
+                Log.d(LOG_TAG, "FetchGameDataTask Complete. " + cVVector.size() + " Inserted");
+
+                convertContentValuesToUXFormat(cVVector, resultStrs);
             }
 
-            if (cVVector.size() > 0) {
-                ContentValues[] cvArray = new ContentValues[cVVector.size()];
-                cVVector.toArray(cvArray);
-                mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
+            // transfer data in arraylist into array
+            String[] results = new String[resultStrs.size()];
+            for (int y = 0; y < resultStrs.size(); y++) {
+                results[y] = resultStrs.get(y);
             }
-/*
-            String sortOrder = GameEntry.COLUMN_GAME_NAME + " ASC";
-            Uri gameDataUri = GameEntry.buildGameUri(System.currentTimeMillis());
+            return results;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-            Cursor cur = mContext.getContentResolver().query(gameDataUri,
-                    null, null, null, sortOrder);
-
-            cVVector = new Vector<ContentValues>(cur.getCount());
-
-            if ( cur.moveToFirst() ) {
-                do {
-                    ContentValues cv = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(cur, cv);
-                    cVVector.add(cv);
-                } while (cur.moveToNext());
+    // takes a JSONArray and breaks it into a comma delimited StringBuilder
+    public String getJsonArrayItems(JSONArray arr, StringBuilder sb) {
+        try {
+            for (int i = 0; i < arr.length(); i++) {
+                sb.append(arr.getJSONObject(i).getString("name") + ",");
             }
-*/
-            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
-
-            String[] resultStrs = convertContentValuesToUXFormat(cVVector);
-            return resultStrs;
+            return sb.toString();
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -170,44 +264,43 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
 
     @Override
     protected String[] doInBackground(String... params) {
-        // Will contain the raw JSON response as a string
-        //String[] gameDataJsonStr = new String[10];
-        String gameDataJsonStr = null;
+        // ArrayList of all the JSONs we'll receive
+        List<JSONObject> gameDataJsonList = new ArrayList<>();
 
-        //int jsonCount = 0;
-        int dayCount = 0;
-        int gameCount = 0;
-        while (gameCount < 11) {
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
 
-            // http://www.giantbomb.com/api/game/37690/?api_key=beda8b0843a1ac3465493df4018ddf26041ab6c4&format=json&field_list=id,name,developers,genres,similar_games,publishers
+        // profile key needed to access GiantBomb api
+        String key = "beda8b0843a1ac3465493df4018ddf26041ab6c4";
+        String format = "json";
 
-            // profile key needed to access GiantBomb api
-            String key = "beda8b0843a1ac3465493df4018ddf26041ab6c4";
-            String format = "json";
+        // field_list narrows down the details returned
+        String field_list_id = "id";
+        String field_list_name = "name";
+        String field_list_deck = "deck";
+        String field_list_image = "image";
+        String field_list_platforms = "platforms";
+        String field_list_release_date = "original_release_date";
+        String field_list_total_results = "number_of_total_results";
 
-            Calendar cal = Calendar.getInstance();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            cal.add(Calendar.DATE, -dayCount);
-            String day = dateFormat.format(cal.getTime());
+        final String GIANTBOMB_GAMES_BASE_URL = "http://www.giantbomb.com/api/games/?";
+        final String KEY_PARAM = "api_key";
+        final String FORMAT_PARAM = "format";
+        final String FIELD_LIST_PARAM = "field_list";
+        final String FIELD_FILTER_PARAM = "filter";
+        final String PLATFORM_FILTER_PS4 = "146";
+        final String PLATFORM_FILTER_XB1 = "145";
+        final String PLATFORM_FILTER_WIIU = "139";
 
-            // give us the name and id of each game you return
-            String field_list_id = "id";
-            String field_list_name = "name";
-            String field_list_deck = "deck";
-            String field_list_image = "image";
-            String field_list_platforms = "platforms";
-            String field_list_release_date = "original_release_date";
+        int dayCount = 0;   // keep track of the days we're querying for
+        try {
 
-            // filter=original_release_date:2015%2D08%2D11%2000%3A00%3A00
+            while (dayCount < 31) {
 
-            try {
-                final String GIANTBOMB_GAMES_BASE_URL = "http://www.giantbomb.com/api/games/?";
-                final String KEY_PARAM = "api_key";
-                final String FORMAT_PARAM = "format";
-                final String FIELD_LIST_PARAM = "field_list";
-                final String FIELD_FILTER_PARAM = "filter";
+                Calendar cal = Calendar.getInstance();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                cal.add(Calendar.DATE, -dayCount);  // takes the calendar back by whatever the count is
+                String day = dateFormat.format(cal.getTime());
 
                 Uri builtUri = Uri.parse(GIANTBOMB_GAMES_BASE_URL).buildUpon()
                         .appendQueryParameter(KEY_PARAM, key)
@@ -219,12 +312,14 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                                 field_list_platforms + "," +
                                 field_list_release_date)
                         .appendQueryParameter(FIELD_FILTER_PARAM,
-                                field_list_release_date + ":" + day + " 00:00:00")
+                                field_list_release_date + ":" + day + " 00:00:00," +
+                                        field_list_platforms + ":" +
+                                        PLATFORM_FILTER_PS4 + "," +
+                                        PLATFORM_FILTER_XB1 + "," +
+                                        PLATFORM_FILTER_WIIU)
                         .build();
 
                 URL url = new URL(builtUri.toString());
-
-                Log.d(LOG_TAG, dayCount + " - " + url.toString());
 
                 // Creating the request to GiantBomb and opening the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -234,164 +329,51 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 // Reading the input stream into a string
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    return null;
-                }
+                if (inputStream == null) return null;
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
+                while ((line = reader.readLine()) != null) buffer.append(line + "\n");
 
-                if (buffer.length() == 0) {
-                    return null;
-                }
+                if (buffer.length() == 0) return null;
                 String jsonStr = buffer.toString();
 
-                final String GB_NUM_PAGE_RESULTS = "number_of_page_results";
-                //final String GB_RESULTS = "results";
-                //final String GB_GAME_ID = "id";
-
-                JSONObject giantBombDataJson = new JSONObject(jsonStr);
-                if (giantBombDataJson.getInt(GB_NUM_PAGE_RESULTS) > 0) {
-                    return getGameDataFromJson(jsonStr);
-                    //gameDataJsonStr[jsonCount] = jsonStr;
-                    //jsonCount++;
-                }
-                gameCount += giantBombDataJson.getInt(GB_NUM_PAGE_RESULTS);
-/*
-                JSONArray gameArray = giantBombDataJson.getJSONArray(GB_RESULTS);
-
-                if (gameCount > 0) {
-
-                    for (int i = 0; i < gameArray.length(); i++) {
-                        JSONObject game = gameArray.getJSONObject(i);
-                        int gameId = game.getInt(GB_GAME_ID);
-
-                        // &format=json&field_list=id,name,developers,genres,similar_games,publishers
-
-                        final String GIANTBOMB_GAME_BASE_URL = "http://www.giantbomb.com/api/game/" + gameId + "/?";
-
-                        builtUri = Uri.parse(GIANTBOMB_GAME_BASE_URL).buildUpon()
-                                .appendQueryParameter(KEY_PARAM, key)
-                                .appendQueryParameter(FORMAT_PARAM, format)
-                                .appendQueryParameter(FIELD_LIST_PARAM, field_list_id + "," +
-                                        field_list_name + "," +
-                                        field_list_deck + "," +
-                                        field_list_image + "," +
-                                        field_list_platforms + "," +
-                                        field_list_release_date)
-                                .appendQueryParameter(FIELD_FILTER_PARAM,
-                                        field_list_release_date + ":" + day + " 00:00:00")
-                                .build();
-                    }
-
-                    URL url = new URL(builtUri.toString());
-
-                    Log.d(LOG_TAG, url.toString());
-
-                    // Creating the request to GiantBomb and opening the connection
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.connect();
-
-                    // Reading the input stream into a string
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) {
-                        return null;
-                    }
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line + "\n");
-                    }
-
-                    if (buffer.length() == 0) {
-                        return null;
-                    }
-                    gameDataJsonStr = buffer.toString();
-
-                    Vector<ContentValues> cVVector = new Vector<ContentValues>(gameArray.length());
-
-                    for (int i = 0; i < gameArray.length(); i++) {
-                        int id;
-                        String name;
-                        String image;
-                        String deck;
-                        String releaseDate;
-
-                        JSONObject game = gameArray.getJSONObject(i);
-
-                        //JSONObject images = game.getJSONObject(GB_IMAGE);
-
-                        id = game.getInt(GB_ID);
-                        name = game.getString(GB_NAME);
-                        //image = images.getString("icon_url");
-                        image = "http:\\/\\/static.giantbomb.com\\/uploads\\/square_avatar\\/9\\/93770\\/2370498-genesis_desertstrike_2__1_.jpg";
-                        deck = game.getString(GB_DECK);
-                        releaseDate = game.getString(GB_RELEASE_DATE);
-
-                        ContentValues gameValues = new ContentValues();
-
-                        gameValues.put(GameEntry.COLUMN_GAME_ID, id);
-                        gameValues.put(GameEntry.COLUMN_GAME_NAME, name);
-                        //gameValues.put(GameEntry.COLUMN_ICON_URL, image);
-                        gameValues.put(GameEntry.COLUMN_DECK, deck);
-                        gameValues.put(GameEntry.COLUMN_RELEASE_DATE, releaseDate);
-
-                        cVVector.add(gameValues);
-                    }
-
-                    if (cVVector.size() > 0) {
-                        ContentValues[] cvArray = new ContentValues[cVVector.size()];
-                        cVVector.toArray(cvArray);
-                        mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
-                    }
-
-                    Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
-
-                    String[] resultStrs = convertContentValuesToUXFormat(cVVector);
-                    return resultStrs;
-
-                } else {
-
+                JSONObject giantBombData = new JSONObject(jsonStr);
+                String gamesFound = giantBombData.getString(field_list_total_results);
+                // no need passing empty JSONs
+                if (Integer.parseInt(gamesFound) > 0) {
+                    gameDataJsonList.add(giantBombData);
                 }
 
-*/
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // Code didn't get the game data
-                return null;
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
+                dayCount++;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            return null;
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
                 }
             }
-            dayCount++;
         }
-/*
+
         try {
-            //return getGameDataFromJson(gameDataJsonStr);
+            return getGameDataFromJson(gameDataJsonList);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
-        */
-        return null;
 
+        return null;
     }
 
     @Override

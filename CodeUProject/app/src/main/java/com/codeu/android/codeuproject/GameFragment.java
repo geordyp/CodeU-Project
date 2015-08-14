@@ -45,6 +45,7 @@ import com.codeu.android.codeuproject.FetchGameDataTask;
  */
 public class GameFragment extends Fragment {
     ArrayAdapter<String> mGameAdapter;
+    List<String> list;
     //Context context;
 
     //public GameFragment(Context c) {
@@ -107,15 +108,8 @@ public class GameFragment extends Fragment {
                 String gameData = mGameAdapter.getItem(position);
                 Intent intent = new Intent(getActivity(), RecommendationActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, gameData);
+                //Log.d("hey,listen", gameData);
                 startActivity(intent);
-            }
-        });
-
-        // Get a reference to the Shuffle Button, and set up click listener.
-        final Button button = (Button) rootView.findViewById(R.id.shuffle_button);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                updateGameData();
             }
         });
 
