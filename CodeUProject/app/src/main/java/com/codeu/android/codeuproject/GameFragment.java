@@ -106,9 +106,8 @@ public class GameFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 String gameData = mGameAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), RecommendationActivity.class)
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, gameData);
-                //Log.d("hey,listen", gameData);
                 startActivity(intent);
             }
         });

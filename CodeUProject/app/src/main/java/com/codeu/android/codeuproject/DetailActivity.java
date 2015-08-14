@@ -14,15 +14,15 @@ import android.widget.TextView;
 /**
  * Created by geordywilliams on 8/4/15.
  */
-public class RecommendationActivity extends ActionBarActivity {
+public class DetailActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recommendation);
+        setContentView(R.layout.activity_detail);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new RecommendationFragment())
+                    .add(R.id.container, new DetailFragment())
                     .commit();
         }
     }
@@ -44,15 +44,15 @@ public class RecommendationActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class RecommendationFragment extends Fragment {
+    public static class DetailFragment extends Fragment {
 
-        public RecommendationFragment() {
+        public DetailFragment() {
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-            View rootView = inflater.inflate(R.layout.fragment_recommendation, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
             Intent intent = getActivity().getIntent();
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {

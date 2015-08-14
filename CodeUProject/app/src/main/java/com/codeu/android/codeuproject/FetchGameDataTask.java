@@ -31,7 +31,7 @@ import java.util.Vector;
 
 public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
 
-    private final String LOG_TAG = "hey,listen up";
+    private final String LOG_TAG = "hey,listen";
 
     private ArrayAdapter<String> mGiantBombAdapter;
     private final Context mContext;

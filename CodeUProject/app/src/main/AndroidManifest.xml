@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RecommendationActivity"
+            android:name=".DetailActivity"
             android:label="@string/title_activity_recommendation"
             android:parentActivityName=".MainActivity" >
             <meta-data
