@@ -21,7 +21,7 @@ public class GameDataProvider extends ContentProvider {
     private GameDataDbHelper mOpenHelper;
 
     static final int GAME = 100;
-    static final int GAME_WITH_NAME = 101;
+    static final int GAME_WITH_ID = 101;
 
     private static final SQLiteQueryBuilder sGameQueryBuilder;
 
@@ -29,18 +29,18 @@ public class GameDataProvider extends ContentProvider {
         sGameQueryBuilder = new SQLiteQueryBuilder();
     }
 
-    //name = ?
+    //id = ?
     private static final String sGameSelection =
-            GameDataContract.GameEntry.COLUMN_GAME_NAME + " = ? ";
+            GameDataContract.GameEntry.COLUMN_GAME_ID + " = ? ";
 
-    private Cursor getGameByName(
+    private Cursor getGameById(
             Uri uri, String[] projection, String sortOrder) {
-        String gameName = GameDataContract.GameEntry.getGameNameFromUri(uri);
+        String gameId = GameDataContract.GameEntry.getGameIdFromUri(uri);
 
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
                 sGameSelection,
-                new String[]{gameName},
+                new String[]{gameId},
                 null,
                 null,
                 sortOrder
@@ -52,7 +52,7 @@ public class GameDataProvider extends ContentProvider {
         final String authority = GameDataContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority, GameDataContract.PATH_GAME, GAME);
-        matcher.addURI(authority, GameDataContract.PATH_GAME + "/*", GAME_WITH_NAME);
+        matcher.addURI(authority, GameDataContract.PATH_GAME + "/*", GAME_WITH_ID);
 
         return matcher;
     }
@@ -69,7 +69,7 @@ public class GameDataProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case GAME_WITH_NAME:
+            case GAME_WITH_ID:
                 return GameDataContract.GameEntry.CONTENT_ITEM_TYPE;
             case GAME:
                 return GameDataContract.GameEntry.CONTENT_TYPE;
@@ -85,9 +85,9 @@ public class GameDataProvider extends ContentProvider {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             // "game/*"
-            case GAME_WITH_NAME:
+            case GAME_WITH_ID:
             {
-                retCursor = getGameByName(uri, projection, sortOrder);
+                retCursor = getGameById(uri, projection, sortOrder);
                 break;
             }
             // "game"

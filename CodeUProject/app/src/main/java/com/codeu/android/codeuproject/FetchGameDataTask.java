@@ -26,6 +26,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -42,11 +43,17 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
     }
 
     void convertContentValuesToUXFormat(Vector<ContentValues> cvv, List<String> resultStrs) {
+        String date;
         for (int i = 0; i < cvv.size(); i++) {
             ContentValues gameValues = cvv.elementAt(i);
 
-            resultStrs.add(gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + "\n" +
-                    gameValues.getAsString(GameEntry.COLUMN_DECK) + " - " +
+            date = gameValues.getAsString(GameEntry.COLUMN_RELEASE_DATE);
+            String[] yearMonth = date.split("-");
+            String[] dayTime = yearMonth[2].split(" ");
+
+            date = yearMonth[1] + "/" + dayTime[0];
+
+            resultStrs.add(gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + " - " + date + "\n" +
                     gameValues.getAsString(GameEntry.COLUMN_PLATFORMS));
         }
     }
@@ -101,8 +108,9 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     JSONArray platforms = game.getJSONArray(GB_PLATFORMS);
                     game_platformList = new StringBuilder();
                     for (int m = 0; m < platforms.length(); m++) {
-                        game_platformList.append(platforms.getJSONObject(m).getString("name") + ",");
+                        game_platformList.append(platforms.getJSONObject(m).getString("name") + ", ");
                     }
+                    game_platformList.delete(game_platformList.length()-2, game_platformList.length());
 
                     // may be null
                     JSONObject images;
@@ -295,6 +303,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         int dayCount = 0;   // keep track of the days we're querying for
         try {
 
+            // we only want the last 30 days worth of released games
             while (dayCount < 31) {
 
                 Calendar cal = Calendar.getInstance();

@@ -44,12 +44,12 @@ public class GameDataContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildGameWithName(String gameName) {
+        public static Uri buildGameWithID(String gameId) {
 
-            return CONTENT_URI.buildUpon().appendPath(gameName).build();
+            return CONTENT_URI.buildUpon().appendPath(gameId).build();
         }
 
-        public static String getGameNameFromUri(Uri uri) {
+        public static String getGameIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
     }
