@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
@@ -98,8 +99,24 @@ public class DetailActivity extends ActionBarActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (!data.moveToFirst()) {return;}
 
-            TextView detailTextView = (TextView) getView().findViewById(R.id.detail_text);
-            detailTextView.setText(data.getString(COL_IND_GAME_NAME));
+            TextView mNameView = (TextView) getView().findViewById(R.id.game_name_textview);
+            mNameView.setText(data.getString(COL_IND_GAME_NAME));
+
+            //ImageView mGameIconView = (ImageView) getView().findViewById(R.id.game_icon);
+
+            TextView mDateView = (TextView) getView().findViewById(R.id.game_date_textview);
+            String date = data.getString(COL_IND_RELEASE_DATE);
+            String[] yearMonth = date.split("-");
+            String[] dayTime = yearMonth[2].split(" ");
+            date = yearMonth[1] + "/" + dayTime[0];
+            mDateView.setText(date);
+
+            TextView mGenreView = (TextView) getView().findViewById(R.id.game_genre_textview);
+            mGenreView.setText(data.getString(COL_IND_GENRES));
+
+            TextView mDeckView = (TextView) getView().findViewById(R.id.game_deck_textview);
+            mDeckView.setText(data.getString(COL_IND_DECK));
+
         }
 
         @Override
