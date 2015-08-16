@@ -28,28 +28,9 @@ public class DetailActivity extends ActionBarActivity {
         }
     }
 
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.recommendation, menu);
-        return true;
-    }
-    */
-
-    /*
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-    */
-
     public static class DetailFragment extends Fragment {
+
+        private String mGameDataStr;
 
         public DetailFragment() {
         }
@@ -61,9 +42,12 @@ public class DetailActivity extends ActionBarActivity {
 
             Intent intent = getActivity().getIntent();
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                String gameDataStr = intent.getStringExtra(Intent.EXTRA_TEXT);
-                ((TextView) rootView.findViewById(R.id.recommendation_text))
-                        .setText(gameDataStr);
+                mGameDataStr = intent.getStringExtra(Intent.EXTRA_TEXT);
+            }
+
+            if (null != mGameDataStr) {
+                ((TextView) rootView.findViewById(R.id.detail_text))
+                        .setText(mGameDataStr);
             }
 
             return rootView;

@@ -1,123 +1,83 @@
 package com.codeu.android.codeuproject;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
-import com.codeu.android.codeuproject.FetchGameDataTask;
+import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 /**
  * Created by geordywilliams on 8/3/15.
  * Fetching game data and displaying it as a layout.
  */
-public class GameFragment extends Fragment {
-    ArrayAdapter<String> mGameAdapter;
-    List<String> list;
-    //Context context;
+public class GameFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    //public GameFragment(Context c) {
-    //    context = c;
-    //}
+    private static final int GAME_DATA_LOADER = 0;
+
+    private static final String[] GAME_DATA_COLUMNS = {
+            GameEntry.TABLE_NAME + "." + GameEntry._ID,
+            GameEntry.COLUMN_GAME_ID,
+            GameEntry.COLUMN_GAME_NAME,
+            GameEntry.COLUMN_DECK,
+            GameEntry.COLUMN_RELEASE_DATE,
+            GameEntry.COLUMN_PLATFORMS,
+            GameEntry.COLUMN_IMAGE,
+            GameEntry.COLUMN_GENRES,
+            GameEntry.COLUMN_DEVELOPERS,
+            GameEntry.COLUMN_PUBLISHERS,
+            GameEntry.COLUMN_SIMILAR_GAMES
+    };
+
+    static final int COL_IND_GAME_DATA_ID = 0;
+    static final int COL_IND_GAME_ID = 1;
+    static final int COL_IND_GAME_NAME = 2;
+    static final int COL_IND_DECK = 3;
+    static final int COL_IND_RELEASE_DATE = 4;
+    static final int COL_IND_PLATFORMS = 5;
+    static final int COL_IND_IMAGE = 6;
+    static final int COL_IND_GENRES = 7;
+    static final int COL_IND_DEVELOPERS = 8;
+    static final int COL_IND_PUBLISHERS = 9;
+    static final int COL_IND_SIMILAR_GAMES = 10;
+
+    GiantBombAdapter mGiantBombAdapter;
+
     public GameFragment() {}
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Allows fragment to handle menu events
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.gamefragment, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml
-        int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            //CharSequence text = "Nothing happened and nothing was supposed to happen.";
-            //int duration = Toast.LENGTH_LONG;
-            //Toast toast = Toast.makeText(context, text, duration);
-            //toast.show();
-
-            //FetchGameDataTask gameDataTask = new FetchGameDataTask();
-            //gameDataTask.execute();
-            //return true;
-            
-            updateGameData();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        mGameAdapter = new ArrayAdapter<String>(
-                getActivity(),
-                R.layout.list_item_game,
-                R.id.list_item_game_textview,
-                new ArrayList<String>());
+        mGiantBombAdapter = new GiantBombAdapter(getActivity(), null, 0);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_game);
-        listView.setAdapter(mGameAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                String gameData = mGameAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, gameData);
-                startActivity(intent);
-            }
-        });
+        listView.setAdapter(mGiantBombAdapter);
 
         return rootView;
     }
-    
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(GAME_DATA_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
     private void updateGameData() {
-        FetchGameDataTask gameDataTask = new FetchGameDataTask(getActivity(), mGameAdapter);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        FetchGameDataTask gameDataTask = new FetchGameDataTask(getActivity());
         gameDataTask.execute();
     }
     
@@ -125,5 +85,27 @@ public class GameFragment extends Fragment {
     public void onStart() {
         super.onStart();
         updateGameData();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Uri gameUri = GameEntry.buildGameUri();
+
+        return new CursorLoader(getActivity(),
+                gameUri,
+                GAME_DATA_COLUMNS,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        mGiantBombAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        mGiantBombAdapter.swapCursor(null);
     }
 }

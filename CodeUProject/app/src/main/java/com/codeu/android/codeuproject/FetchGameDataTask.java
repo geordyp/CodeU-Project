@@ -30,39 +30,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
+public class FetchGameDataTask extends AsyncTask<String, Void, Void> {
 
     private final String LOG_TAG = "hey,listen";
 
-    private ArrayAdapter<String> mGiantBombAdapter;
     private final Context mContext;
 
-    public FetchGameDataTask(Context context, ArrayAdapter<String> giantBombAdapter) {
+    public FetchGameDataTask(Context context) {
         mContext = context;
-        mGiantBombAdapter = giantBombAdapter;
-    }
-
-    void convertContentValuesToUXFormat(Vector<ContentValues> cvv, List<String> resultStrs) {
-        String date;
-        for (int i = 0; i < cvv.size(); i++) {
-            ContentValues gameValues = cvv.elementAt(i);
-
-            date = gameValues.getAsString(GameEntry.COLUMN_RELEASE_DATE);
-            String[] yearMonth = date.split("-");
-            String[] dayTime = yearMonth[2].split(" ");
-
-            date = yearMonth[1] + "/" + dayTime[0];
-
-            resultStrs.add(gameValues.getAsString(GameEntry.COLUMN_GAME_NAME) + " - " + date + "\n" +
-                    gameValues.getAsString(GameEntry.COLUMN_PLATFORMS));
-        }
     }
 
     /**
      * Take the string representing the game data in JSON format and
      * pull out the data we need to construct the strings needed for the wireframes.
      */
-    private String[] getGameDataFromJson(List<JSONObject> giantBombJsonList) throws JSONException {
+    private void getGameDataFromJson(List<JSONObject> giantBombJsonList) throws JSONException {
+
         // The JSON objects to be extracted from list
         final String GB_RESULTS = "results";
         final String GB_ID = "id";
@@ -79,9 +62,6 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         final String GB_PUBLISHERS = "publishers";
         final String GB_SIMILAR_GAMES = "similar_games";
 
-        // the resulting values from the JSONs
-        List<String> resultStrs = new ArrayList<>();
-
         try {
 
             // for each of the JSONs in list of GiantBomb JSONs
@@ -95,7 +75,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 String game_image;
                 String game_deck;
                 String game_releaseDate;
-                StringBuilder game_platformList;
+                String game_platformList;
                 for (int i = 0; i < gameArray.length(); i++) {
 
                     JSONObject game = gameArray.getJSONObject(i);
@@ -106,11 +86,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     game_releaseDate = game.getString(GB_RELEASE_DATE);
 
                     JSONArray platforms = game.getJSONArray(GB_PLATFORMS);
-                    game_platformList = new StringBuilder();
-                    for (int m = 0; m < platforms.length(); m++) {
-                        game_platformList.append(platforms.getJSONObject(m).getString("name") + ", ");
-                    }
-                    game_platformList.delete(game_platformList.length()-2, game_platformList.length());
+                    game_platformList = getJsonArrayItems(platforms);
 
                     // may be null
                     JSONObject images;
@@ -162,7 +138,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     // Reading the input stream into a string
                     InputStream inputStream = urlConnection.getInputStream();
                     StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) return null;
+                    if (inputStream == null) return;
                     reader = new BufferedReader(new InputStreamReader(inputStream));
 
                     String line;
@@ -178,37 +154,32 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                         JSONObject giantBombDataJson = new JSONObject(gameDataJsonStr);
                         JSONObject gameInfo = giantBombDataJson.getJSONObject(GB_RESULTS);
 
-                        StringBuilder genres = new StringBuilder();
-                        StringBuilder developers = new StringBuilder();
-                        StringBuilder publishers = new StringBuilder();
-                        StringBuilder similar_games = new StringBuilder();
-
                         // all of these may be null
                         JSONArray genresArray;
                         try {
                             genresArray = gameInfo.getJSONArray(GB_GENRES);
-                            game_genresList = getJsonArrayItems(genresArray, genres);
+                            game_genresList = getJsonArrayItems(genresArray);
                         } catch(JSONException e) {
                             game_genresList = null;
                         }
                         JSONArray developersArray;
                         try {
                             developersArray = gameInfo.getJSONArray(GB_DEVELOPERS);
-                            game_developersList = getJsonArrayItems(developersArray, developers);
+                            game_developersList = getJsonArrayItems(developersArray);
                         } catch(JSONException e) {
                             game_developersList = null;
                         }
                         JSONArray publisherArray;
                         try {
                             publisherArray = gameInfo.getJSONArray(GB_PUBLISHERS);
-                            game_publishersList = getJsonArrayItems(publisherArray, publishers);
+                            game_publishersList = getJsonArrayItems(publisherArray);
                         } catch(JSONException e) {
                             game_publishersList = null;
                         }
                         JSONArray similarGamesArray;
                         try {
                             similarGamesArray = gameInfo.getJSONArray(GB_SIMILAR_GAMES);
-                            game_similarGamesList = getJsonArrayItems(similarGamesArray, similar_games);
+                            game_similarGamesList = getJsonArrayItems(similarGamesArray);
                         } catch(JSONException e) {
                             game_similarGamesList = null;
                         }
@@ -229,23 +200,17 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                     cVVector.add(gameValues);
                 }
 
+                int inserted = 0;
+                // add to database
                 if (cVVector.size() > 0) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
-                    mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
+                    inserted = mContext.getContentResolver().bulkInsert(GameEntry.CONTENT_URI, cvArray);
                 }
 
-                Log.d(LOG_TAG, "FetchGameDataTask Complete. " + cVVector.size() + " Inserted");
+                Log.d(LOG_TAG, "FetchGameDataTask Complete. " + inserted + " Inserted");
 
-                convertContentValuesToUXFormat(cVVector, resultStrs);
             }
-
-            // transfer data in arraylist into array
-            String[] results = new String[resultStrs.size()];
-            for (int y = 0; y < resultStrs.size(); y++) {
-                results[y] = resultStrs.get(y);
-            }
-            return results;
         } catch (IOException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -253,15 +218,17 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
-        return null;
     }
 
     // takes a JSONArray and breaks it into a comma delimited StringBuilder
-    public String getJsonArrayItems(JSONArray arr, StringBuilder sb) {
+    public String getJsonArrayItems(JSONArray arr) {
+        StringBuilder sb = new StringBuilder();
         try {
             for (int i = 0; i < arr.length(); i++) {
-                sb.append(arr.getJSONObject(i).getString("name") + ",");
+                sb.append(arr.getJSONObject(i).getString("name") + ", ");
             }
+            sb.delete(sb.length()-2, sb.length());
+
             return sb.toString();
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -271,7 +238,8 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
     }
 
     @Override
-    protected String[] doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
+
         // ArrayList of all the JSONs we'll receive
         List<JSONObject> gameDataJsonList = new ArrayList<>();
 
@@ -303,8 +271,8 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
         int dayCount = 0;   // keep track of the days we're querying for
         try {
 
-            // we only want the last 30 days worth of released games
-            while (dayCount < 31) {
+            // we only want the last 14 days worth of released games
+            while (dayCount < 15) {
 
                 Calendar cal = Calendar.getInstance();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -356,6 +324,8 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
 
                 dayCount++;
             }
+            getGameDataFromJson(gameDataJsonList);
+
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             return null;
@@ -374,24 +344,7 @@ public class FetchGameDataTask extends AsyncTask<String, Void, String[]> {
                 }
             }
         }
-
-        try {
-            return getGameDataFromJson(gameDataJsonList);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        }
-
         return null;
-    }
 
-    @Override
-    protected void onPostExecute(String[] result) {
-        if (result != null) {
-            mGiantBombAdapter.clear();
-            for (String gameDataStr:result) {
-                mGiantBombAdapter.add(gameDataStr);
-            }
-        }
     }
 }

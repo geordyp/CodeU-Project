@@ -9,6 +9,7 @@ import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.format.Time;
+import android.util.Log;
 
 public class GameDataContract {
 
@@ -25,6 +26,7 @@ public class GameDataContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GAME;
+
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GAME;
 
@@ -40,13 +42,15 @@ public class GameDataContract {
         public static final String COLUMN_PUBLISHERS = "publishers";
         public static final String COLUMN_SIMILAR_GAMES = "similar_games";
 
-        public static Uri buildGameUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
+        public static Uri buildGameUri() {
+            return CONTENT_URI;
         }
 
+        // may need to be different
+        // query may conflict with getGameIdFromUri
         public static Uri buildGameWithID(String gameId) {
-
-            return CONTENT_URI.buildUpon().appendPath(gameId).build();
+            return CONTENT_URI.buildUpon()
+                    .appendQueryParameter(COLUMN_GAME_ID, gameId).build();
         }
 
         public static String getGameIdFromUri(Uri uri) {

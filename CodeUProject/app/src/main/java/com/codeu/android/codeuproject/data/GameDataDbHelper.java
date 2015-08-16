@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
 public class GameDataDbHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
 
     static final String DATABASE_NAME = "gameData.db";
 
@@ -32,8 +32,10 @@ public class GameDataDbHelper extends SQLiteOpenHelper {
                 GameEntry.COLUMN_GENRES + " TEXT, " +
                 GameEntry.COLUMN_DEVELOPERS + " TEXT, " +
                 GameEntry.COLUMN_PUBLISHERS + " TEXT, " +
-                GameEntry.COLUMN_SIMILAR_GAMES + " TEXT " +
-                " );";
+                GameEntry.COLUMN_SIMILAR_GAMES + " TEXT, " +
+
+                " UNIQUE (" + GameEntry.COLUMN_GAME_ID + ", " +
+                GameEntry.COLUMN_GAME_NAME + ") ON CONFLICT REPLACE);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_GAME_TABLE);
     }

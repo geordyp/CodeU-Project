@@ -16,7 +16,7 @@ public class GameDataProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
-    private final String LOG_TAG = "tGameDataProvider";
+    private final String LOG_TAG = "hey,listen.Provider";
 
     private GameDataDbHelper mOpenHelper;
 
@@ -31,11 +31,15 @@ public class GameDataProvider extends ContentProvider {
 
     //id = ?
     private static final String sGameSelection =
-            GameDataContract.GameEntry.COLUMN_GAME_ID + " = ? ";
+            GameDataContract.GameEntry.TABLE_NAME + "." +
+                    GameDataContract.GameEntry.COLUMN_GAME_ID + " = ? ";
 
     private Cursor getGameById(
             Uri uri, String[] projection, String sortOrder) {
+
         String gameId = GameDataContract.GameEntry.getGameIdFromUri(uri);
+
+        Log.d(LOG_TAG, "uri " + uri);
 
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
@@ -82,15 +86,18 @@ public class GameDataProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
+        Log.d(LOG_TAG, "q uri: " + uri);
+
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "game/*"
+
+            //"game/*"
             case GAME_WITH_ID:
             {
                 retCursor = getGameById(uri, projection, sortOrder);
                 break;
             }
-            // "game"
+            //"game"
             case GAME: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         GameDataContract.GameEntry.TABLE_NAME,
@@ -121,7 +128,7 @@ public class GameDataProvider extends ContentProvider {
                 Log.d(LOG_TAG, values.toString());
                 long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
-                    returnUri = GameDataContract.GameEntry.buildGameUri(_id);
+                    returnUri = GameDataContract.GameEntry.buildGameUri();
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
