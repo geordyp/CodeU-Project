@@ -14,9 +14,7 @@ import android.util.Log;
  */
 public class GameDataProvider extends ContentProvider {
 
-    // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
-    private final String LOG_TAG = "hey,listen.Provider";
 
     private GameDataDbHelper mOpenHelper;
 
@@ -41,8 +39,6 @@ public class GameDataProvider extends ContentProvider {
             Uri uri, String[] projection, String sortOrder) {
 
         long gameId = GameDataContract.GameEntry.getGameIdFromUri(uri);
-
-        Log.d("yup", "uri " + gameId);
 
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
@@ -89,21 +85,17 @@ public class GameDataProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
-        Log.d(LOG_TAG, "q uri: " + uri);
-
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
 
             //"game/*"
             case GAME_WITH_ID:
             {
-                Log.d(LOG_TAG, "GAME_WITH_ID");
                 retCursor = getGameById(uri, projection, sortOrder);
                 break;
             }
             //"game"
             case GAME: {
-                Log.d(LOG_TAG, "GAME");
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         GameDataContract.GameEntry.TABLE_NAME,
                         projection,
@@ -130,7 +122,6 @@ public class GameDataProvider extends ContentProvider {
 
         switch (match) {
             case GAME: {
-                Log.d(LOG_TAG, values.toString());
                 long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, values);
                 if ( _id > 0 )
                     returnUri = GameDataContract.GameEntry.buildGameUri();
@@ -201,7 +192,6 @@ public class GameDataProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
-                        Log.d(LOG_TAG, value.toString());
                         long _id = db.insert(GameDataContract.GameEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;

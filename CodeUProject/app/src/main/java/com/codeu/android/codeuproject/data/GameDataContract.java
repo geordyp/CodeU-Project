@@ -5,11 +5,8 @@ package com.codeu.android.codeuproject.data;
  */
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.text.format.Time;
-import android.util.Log;
 
 public class GameDataContract {
 
@@ -46,8 +43,6 @@ public class GameDataContract {
             return CONTENT_URI;
         }
 
-        // may need to be different
-        // query may conflict with getGameIdFromUri
         public static Uri buildGameWithID(String gameId) {
             return CONTENT_URI.buildUpon()
                     .appendPath(gameId).build();
