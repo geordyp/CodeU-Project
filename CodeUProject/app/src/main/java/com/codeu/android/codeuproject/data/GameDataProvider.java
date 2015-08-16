@@ -27,6 +27,9 @@ public class GameDataProvider extends ContentProvider {
 
     static{
         sGameQueryBuilder = new SQLiteQueryBuilder();
+
+        sGameQueryBuilder.setTables(
+                GameDataContract.GameEntry.TABLE_NAME);
     }
 
     //id = ?
@@ -37,14 +40,14 @@ public class GameDataProvider extends ContentProvider {
     private Cursor getGameById(
             Uri uri, String[] projection, String sortOrder) {
 
-        String gameId = GameDataContract.GameEntry.getGameIdFromUri(uri);
+        long gameId = GameDataContract.GameEntry.getGameIdFromUri(uri);
 
-        Log.d(LOG_TAG, "uri " + uri);
+        Log.d("yup", "uri " + gameId);
 
         return sGameQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
                 sGameSelection,
-                new String[]{gameId},
+                new String[]{Long.toString(gameId)},
                 null,
                 null,
                 sortOrder
@@ -94,11 +97,13 @@ public class GameDataProvider extends ContentProvider {
             //"game/*"
             case GAME_WITH_ID:
             {
+                Log.d(LOG_TAG, "GAME_WITH_ID");
                 retCursor = getGameById(uri, projection, sortOrder);
                 break;
             }
             //"game"
             case GAME: {
+                Log.d(LOG_TAG, "GAME");
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         GameDataContract.GameEntry.TABLE_NAME,
                         projection,

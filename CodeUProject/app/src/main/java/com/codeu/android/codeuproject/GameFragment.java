@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -75,9 +76,10 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+
                 if (cursor != null) {
                     Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .setData(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_DATA_ID)));
+                            .setData(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_ID)));
                     startActivity(intent);
                 }
             }
@@ -95,12 +97,6 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
     private void updateGameData() {
         FetchGameDataTask gameDataTask = new FetchGameDataTask(getActivity());
         gameDataTask.execute();
-    }
-    
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateGameData();
     }
 
     @Override

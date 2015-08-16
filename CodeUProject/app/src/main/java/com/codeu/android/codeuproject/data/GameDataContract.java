@@ -50,11 +50,11 @@ public class GameDataContract {
         // query may conflict with getGameIdFromUri
         public static Uri buildGameWithID(String gameId) {
             return CONTENT_URI.buildUpon()
-                    .appendQueryParameter(COLUMN_GAME_ID, gameId).build();
+                    .appendPath(gameId).build();
         }
 
-        public static String getGameIdFromUri(Uri uri) {
-            return uri.getPathSegments().get(1);
+        public static long getGameIdFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
         }
     }
 
