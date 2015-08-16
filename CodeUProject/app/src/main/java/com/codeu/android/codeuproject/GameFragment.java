@@ -1,5 +1,6 @@
 package com.codeu.android.codeuproject;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import java.util.List;
 
@@ -66,6 +68,20 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_game);
         listView.setAdapter(mGiantBombAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                if (cursor != null) {
+                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                            .setData(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_DATA_ID)));
+                    startActivity(intent);
+                }
+            }
+        });
 
         return rootView;
     }
