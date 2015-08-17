@@ -1,7 +1,7 @@
 package com.codeu.android.codeuproject;
 
-import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
@@ -27,8 +26,15 @@ public class DetailActivity extends ActionBarActivity {
         setContentView(R.layout.activity_detail);
 
         if (savedInstanceState == null) {
+
+            Bundle args = new Bundle();
+            args.putParcelable(DetailFragment.DETAIL_URI, getIntent().getData());
+
+            DetailFragment frag = new DetailFragment();
+            frag.setArguments(args);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new DetailFragment())
+                    .add(R.id.game_detail_container, frag)
                     .commit();
         }
     }
@@ -36,6 +42,8 @@ public class DetailActivity extends ActionBarActivity {
     public static class DetailFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
         private static final int DETAIL_LOADER = 0;
+        static final String DETAIL_URI = "URI";
+        private Uri mUri;
 
         private static final String[] GAME_DATA_COLUMNS = {
                 GameEntry.TABLE_NAME + "." + GameEntry._ID,
@@ -69,6 +77,11 @@ public class DetailActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+            Bundle arguments = getArguments();
+            if (arguments != null) {
+                mUri = arguments.getParcelable(DetailFragment.DETAIL_URI);
+            }
+
             return inflater.inflate(R.layout.fragment_detail, container, false);
         }
 
@@ -81,18 +94,23 @@ public class DetailActivity extends ActionBarActivity {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-            Intent intent = getActivity().getIntent();
-            if (intent == null) {
-                return null;
+            //Intent intent = getActivity().getIntent();
+            //if (intent == null || intent.getData() == null) {
+            //    return null;
+            //}
+
+            if (null != mUri) {
+
+                return new CursorLoader(
+                        getActivity(),
+                        mUri,
+                        GAME_DATA_COLUMNS,
+                        null,
+                        null,
+                        null);
             }
 
-            return new CursorLoader(
-                    getActivity(),
-                    intent.getData(),
-                    GAME_DATA_COLUMNS,
-                    null,
-                    null,
-                    null);
+            return null;
         }
 
         @Override

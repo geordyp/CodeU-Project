@@ -1,6 +1,5 @@
 package com.codeu.android.codeuproject;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -58,6 +57,11 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
 
     public GameFragment() {}
 
+    public interface Callback {
+
+        public void onItemSelected(Uri info);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,9 +101,13 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
 
                 if (cursor != null) {
-                    Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .setData(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_ID)));
-                    startActivity(intent);
+
+                    ((Callback) getActivity()).
+                            onItemSelected(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_ID)));
+
+                    //Intent intent = new Intent(getActivity(), DetailActivity.class)
+                      //      .setData(GameEntry.buildGameWithID(cursor.getString(COL_IND_GAME_ID)));
+                    //startActivity(intent);
                 }
             }
         });
