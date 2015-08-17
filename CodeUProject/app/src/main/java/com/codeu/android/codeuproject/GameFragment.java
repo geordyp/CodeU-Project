@@ -9,10 +9,14 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.codeu.android.codeuproject.data.GameDataContract.GameEntry;
 
@@ -55,6 +59,27 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
     public GameFragment() {}
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.gamefragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            updateGameData();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         mGiantBombAdapter = new GiantBombAdapter(getActivity(), null, 0);
@@ -89,6 +114,12 @@ public class GameFragment extends Fragment implements LoaderManager.LoaderCallba
     }
 
     private void updateGameData() {
+
+        CharSequence text = "Fetching game releases from the last 2 weeks.";
+        int duration = Toast.LENGTH_LONG;
+        Toast toast = Toast.makeText(getActivity(), text, duration);
+        toast.show();
+
         FetchGameDataTask gameDataTask = new FetchGameDataTask(getActivity());
         gameDataTask.execute();
     }
