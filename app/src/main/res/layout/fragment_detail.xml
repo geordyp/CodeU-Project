@@ -1,0 +1,72 @@
+<!-- Master layout. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_gravity="left"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header: Game Name-->
+        <TextView
+            android:fontFamily="sans-serif-condensed"
+            android:id="@+id/game_name_textview"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textSize="24sp" />
+
+        <!-- Horizontal Layout for image and date info -->
+        <LinearLayout
+            android:gravity="center_horizontal"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:orientation="horizontal">
+
+            <!-- Game image -->
+            <ImageView
+                android:id="@+id/game_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <!-- Date info -->
+            <LinearLayout
+                android:gravity="center_vertical"
+                android:layout_gravity="left"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Expected Release Day, Month, Year -->
+                <TextView
+                    android:fontFamily="sans-serif-light"
+                    android:id="@+id/game_date_textview"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="40sp" />
+
+                <!-- Genres -->
+                <TextView
+                    android:fontFamily="sans-serif-light"
+                    android:id="@+id/game_genre_textview"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Game Deck -->
+        <TextView
+            android:fontFamily="sans-serif-light"
+            android:id="@+id/game_deck_textview"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+</ScrollView>
